@@ -1,10 +1,29 @@
 version: '3'
 
 volumes:
+  vendor-store-api:
   vendor-store-web:
-  node_modules-store-web:
 
 services:
+  # API
+  api:
+    container_name: ${COMPOSE_PROJECT_NAME}-api
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        - APP_NAME=${COMPOSE_PROJECT_NAME}
+    environment:
+      DOCUMENT_ROOT: ${DIR_WEB_DOCUMENT_ROOT}
+      LOGS_DIR: ${DIR_WEB_LOGS}
+    ports:
+      - "10180:80"
+    volumes:
+      - ../backend/_api/src:${DIR_WEB_HTML}
+      - ./web/apache:/etc/apache2/sites-enabled
+      - ./web/php/php.ini:/usr/local/etc/php/php.ini
+      - ./web/apache/logs:${DIR_WEB_LOGS}
+  
   # WEB
   web:
     container_name: ${COMPOSE_PROJECT_NAME}-web
