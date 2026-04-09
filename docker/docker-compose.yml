@@ -1,0 +1,57 @@
+version: '3'
+
+volumes:
+  vendor-store-web:
+  node_modules-store-web:
+
+services:
+  # WEB
+  web:
+    container_name: ${COMPOSE_PROJECT_NAME}-web
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      DOCUMENT_ROOT: ${DIR_WEB_DOCUMENT_ROOT}
+      LOGS_DIR: ${DIR_WEB_LOGS}
+    ports:
+      - "10181:80"
+      - "5173:5173"
+    volumes:
+      - ../backend/_web/src:${DIR_WEB_HTML}
+      - ./web/apache:/etc/apache2/sites-enabled
+      - ./web/php/php.ini:/usr/local/etc/php/php.ini
+      - ./web/apache/logs:${DIR_WEB_LOGS}
+
+  # データベース
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME}-db
+    image: mysql:8.0
+    # image: arm64v8/mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: ${COMPOSE_PROJECT_NAME}
+      MYSQL_USER: ${COMPOSE_PROJECT_NAME}
+      MYSQL_PASSWORD: ${COMPOSE_PROJECT_NAME}-pw
+      LANG: C.UTF-8
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "13306:3306"
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/log:/var/log/mysql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./db/sql:/docker-entrypoint-initdb.d
+
+  # phpmyadmin
+  pma:
+    container_name: ${COMPOSE_PROJECT_NAME}-pma
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOSTS: ${COMPOSE_PROJECT_NAME}-db
+      PMA_USER: ${COMPOSE_PROJECT_NAME}
+      PMA_PASSWORD: ${COMPOSE_PROJECT_NAME}-pw
+    ports:
+      - "8080:80"
