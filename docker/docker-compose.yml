@@ -11,6 +11,8 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+      args:
+        - APP_NAME=${COMPOSE_PROJECT_NAME}
     environment:
       DOCUMENT_ROOT: ${DIR_WEB_DOCUMENT_ROOT}
       LOGS_DIR: ${DIR_WEB_LOGS}

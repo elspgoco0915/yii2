@@ -1,5 +1,8 @@
 FROM php:8.2-apache
 
+# 定数宣言
+ARG APP_NAME
+
 # backend
 COPY ./php/php.ini /usr/local/etc/php/
 COPY ./apache/*.conf /etc/apache2/sites-enabled/
@@ -36,12 +39,9 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /composer
 ENV PATH $PATH:/composer/vendor/bin
 
-# laravel
+# yii
 WORKDIR /var/www/html
-RUN composer global require "laravel/installer"
 
-RUN mkdir -p /var/www/html/storage/framework/cache/data && \
-  mkdir -p /var/www/html/storage/framework/sessions && \
-  mkdir -p /var/www/html/storage/framework/views && \
-  mkdir -p /var/www/html/storage/framework/testing && \
-  chmod -R 777 /var/www/html/storage
+RUN mkdir -p runtime web/assets && \
+    chmod -R 777 runtime web/assets && \
+    chown -R www-data:www-data /var/www/html
